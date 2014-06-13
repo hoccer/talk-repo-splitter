@@ -3,3 +3,6 @@ MethodLength:
 
 LineLength:
   Max: 100
+
+WordArray:
+  Enabled: false

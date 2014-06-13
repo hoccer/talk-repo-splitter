@@ -41,7 +41,7 @@ def main
     talk_repo = ARGV[0]
     output_path = ARGV[1]
     branches = remote_branches(talk_repo)
-    # branches = ["develop"]
+    # branches = ['develop']
 
     modules.each do |mod|
       branches.each do |branch|
