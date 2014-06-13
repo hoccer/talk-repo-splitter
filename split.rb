@@ -55,7 +55,8 @@ def generate_subtree(talk_repo, mod, branch)
   subtree = subtree_branch(mod, branch)
 
   puts "Creating subtree #{subtree}"
-  run "cd #{talk_repo} && git checkout #{branch}"
+  commit = `cd #{talk_repo} && git rev-parse origin/#{branch}`
+  run "cd #{talk_repo} && git checkout #{commit}"
   run "cd #{talk_repo} && git subtree split --prefix #{mod} --branch #{subtree}"
 end
 
