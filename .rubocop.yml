@@ -1,5 +1,5 @@
 MethodLength:
-  Max: 15
+  Max: 16
 
 LineLength:
   Max: 100

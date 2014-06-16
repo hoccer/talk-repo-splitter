@@ -73,6 +73,10 @@ def create_git_repo(path, mod)
   end
 end
 
+def checkout(repo, branch)
+  run "cd #{repo} && git checkout #{branch}"
+end
+
 def pull_subtree(talk_repo, path, mod, branch)
   mod_repo = module_repo(path, mod)
   if branch_exists?(mod_repo, branch)
@@ -98,6 +102,8 @@ def main
         pull_subtree(talk_repo, output_path, mod, branch)
         remove_subtree(talk_repo, mod, branch)
       end
+
+      checkout(module_repo(output_path, mod), 'master')
     end
   else
     puts 'USAGE: split.rb HOCCER_TALK_REPO OUTPUT_PATH'
