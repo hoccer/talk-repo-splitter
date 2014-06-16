@@ -9,6 +9,7 @@ def modules
     'cli-log4j',
     'client',
     'common',
+    'doc',
     'filecache',
     'integration-tests',
     'jsonrpc-annotations',
