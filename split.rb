@@ -33,6 +33,11 @@ def remote_branches(repo)
   end
 end
 
+def remote_tags(repo)
+  output = run "cd #{repo} && git tag --list"
+  tags = output.lines
+end
+
 def branch_exists?(repo, branch)
   `cd #{repo} && git show-branch #{branch}`
   $CHILD_STATUS.exitstatus == 0
@@ -110,6 +115,7 @@ def main
     talk_repo = File.expand_path(ARGV[0])
     output_path = File.expand_path(ARGV[1])
     branches = remote_branches(talk_repo)
+    tags = remote_tags(talk_repo)
 
     create_git_repo(output_path, '.')
 
