@@ -4,25 +4,23 @@ require 'English'
 
 def modules
   [
-    # {:folder => 'android', :remote => 'git@github.com:hoccer/hoccer-xo-android.git'},
-    # {:folder => 'cli-api', :remote => 'git@github.com:hoccer/better-cli.git'},
-    # {:folder => 'cli-log4j', :remote => 'git@github.com:hoccer/better-cli-log4j.git'},
-    # {:folder => 'client', :remote => 'git@github.com:hoccer/talk-client.git'},
+    {:folder => 'android', :remote => 'git@github.com:hoccer/hoccer-xo-android.git'},
+    {:folder => 'cli-api', :remote => 'git@github.com:hoccer/better-cli.git'},
+    {:folder => 'cli-log4j', :remote => 'git@github.com:hoccer/better-cli-log4j.git'},
+    {:folder => 'client', :remote => 'git@github.com:hoccer/talk-client.git'},
     {:folder => 'common', :remote => 'git@github.com:hoccer/talk-common.git'},
-    # {:folder => 'filecache', :remote => 'git@github.com:hoccer/talk-filecache.git'},
-    # {:folder => 'integration-tests', :remote => 'git@github.com:hoccer/talk-integration-tests.git'},
-    # {:folder => 'jsonrpc-annotations', :remote => 'git@github.com:hoccer/better-jsonrpc-annotations.git'},
-    # {:folder => 'jsonrpc-common', :remote => 'git@github.com:hoccer/better-jsonrpc-common.git'},
-    # {:folder => 'jsonrpc-websocket', :remote => 'git@github.com:hoccer/better-jsonrpc-websocket.git'},
-    # {:folder => 'server', :remote => 'git@github.com:hoccer/talk-server.git'},
-    # {:folder => 'srp', :remote => 'git@github.com:hoccer/talk-srp.git'},
+    {:folder => 'filecache', :remote => 'git@github.com:hoccer/talk-filecache.git'},
+    {:folder => 'integration-tests', :remote => 'git@github.com:hoccer/talk-integration-tests.git'},
+    {:folder => 'jsonrpc-annotations', :remote => 'git@github.com:hoccer/better-jsonrpc-annotations.git'},
+    {:folder => 'jsonrpc-common', :remote => 'git@github.com:hoccer/better-jsonrpc-common.git'},
+    {:folder => 'jsonrpc-websocket', :remote => 'git@github.com:hoccer/better-jsonrpc-websocket.git'},
+    {:folder => 'server', :remote => 'git@github.com:hoccer/talk-server.git'},
+    {:folder => 'srp', :remote => 'git@github.com:hoccer/talk-srp.git'},
     {:folder => 'tool', :remote => 'git@github.com:hoccer/talk-tool.git'}
   ]
 end
 
 def remote_branches(repo)
-  return ['master', 'feature_system_invitation']
-
   output = run "cd #{repo} && git branch --remotes"
   lines = output.lines
 
