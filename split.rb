@@ -4,24 +4,25 @@ require 'English'
 
 def modules
   [
-    'android',
-    'cli-api',
-    'cli-log4j',
-    'client',
-    'common',
-    'doc',
-    'filecache',
-    'integration-tests',
-    'jsonrpc-annotations',
-    'jsonrpc-common',
-    'jsonrpc-websocket',
-    'server',
-    'srp',
-    'tool'
+    # {:folder => 'android', :remote => 'git@github.com:hoccer/hoccer-xo-android.git'},
+    # {:folder => 'cli-api', :remote => 'git@github.com:hoccer/better-cli.git'},
+    # {:folder => 'cli-log4j', :remote => 'git@github.com:hoccer/better-cli-log4j.git'},
+    # {:folder => 'client', :remote => 'git@github.com:hoccer/talk-client.git'},
+    {:folder => 'common', :remote => 'git@github.com:hoccer/talk-common.git'},
+    # {:folder => 'filecache', :remote => 'git@github.com:hoccer/talk-filecache.git'},
+    # {:folder => 'integration-tests', :remote => 'git@github.com:hoccer/talk-integration-tests.git'},
+    # {:folder => 'jsonrpc-annotations', :remote => 'git@github.com:hoccer/better-jsonrpc-annotations.git'},
+    # {:folder => 'jsonrpc-common', :remote => 'git@github.com:hoccer/better-jsonrpc-common.git'},
+    # {:folder => 'jsonrpc-websocket', :remote => 'git@github.com:hoccer/better-jsonrpc-websocket.git'},
+    # {:folder => 'server', :remote => 'git@github.com:hoccer/talk-server.git'},
+    # {:folder => 'srp', :remote => 'git@github.com:hoccer/talk-srp.git'},
+    {:folder => 'tool', :remote => 'git@github.com:hoccer/talk-tool.git'}
   ]
 end
 
 def remote_branches(repo)
+  return ['master', 'feature_system_invitation']
+
   output = run "cd #{repo} && git branch --remotes"
   lines = output.lines
 
@@ -78,6 +79,23 @@ def checkout(repo, branch)
   run "cd #{repo} && git checkout #{branch}"
 end
 
+def add_remote(repo, name, url)
+  run "cd #{repo} && git remote add #{name} #{url}"
+end
+
+def add_submodule(repo, remote, mod)
+  run "cd #{repo} && git submodule add #{remote} #{mod}"
+end
+
+def commit_all(repo, message)
+  run "cd #{repo} && git add --all"
+  run "cd #{repo} && git commit --message=\"#{message}\""
+end
+
+def create_branch(repo, branch, source)
+  run "cd #{repo} && git branch #{branch} #{source}"
+end
+
 def pull_subtree(talk_repo, path, mod, branch)
   mod_repo = module_repo(path, mod)
   if branch_exists?(mod_repo, branch)
@@ -95,16 +113,35 @@ def main
     output_path = File.expand_path(ARGV[1])
     branches = remote_branches(talk_repo)
 
+    create_git_repo(output_path, '.')
+
     modules.each do |mod|
-      create_git_repo(output_path, mod)
+      create_git_repo(output_path, mod[:folder])
 
       branches.each do |branch|
-        generate_subtree(talk_repo, mod, branch)
-        pull_subtree(talk_repo, output_path, mod, branch)
-        remove_subtree(talk_repo, mod, branch)
+        generate_subtree(talk_repo, mod[:folder], branch)
+        pull_subtree(talk_repo, output_path, mod[:folder], branch)
+        remove_subtree(talk_repo, mod[:folder], branch)
       end
 
-      checkout(module_repo(output_path, mod), 'master')
+      checkout(module_repo(output_path, mod[:folder]), 'master')
+      add_remote(module_repo(output_path, mod[:folder]), 'origin', mod[:remote])
+
+      add_submodule(output_path, mod[:remote], mod[:folder])
+    end
+
+    commit_all(output_path, 'Initial commit')
+
+    branches.each do |branch|
+      next if branch == 'master'
+
+      modules.each do |mod|
+        checkout(module_repo(output_path, mod[:folder]), branch)
+      end
+
+      create_branch(output_path, branch, 'master')
+      checkout(output_path, branch)
+      commit_all(output_path, "Initial commit for branch #{branch}")
     end
   else
     puts 'USAGE: split.rb HOCCER_TALK_REPO OUTPUT_PATH'
