@@ -34,8 +34,13 @@ def remote_branches(repo)
 end
 
 def remote_tags(repo)
+  run "cd #{repo} && git fetch --tags --prune"
   output = run "cd #{repo} && git tag --list"
   tags = output.lines
+
+  tags.map do |tag|
+    tag.strip
+  end
 end
 
 def branch_exists?(repo, branch)
@@ -56,17 +61,20 @@ def run(command)
   `#{command}`
 end
 
-def generate_subtree(talk_repo, mod, branch)
-  subtree = subtree_branch(mod, branch)
+def commit_id(repo, branch_or_tag)
+  `cd #{repo} && git rev-list -1 #{branch_or_tag}`
+end
+
+def generate_subtree(talk_repo, mod, name, commit)
+  subtree = subtree_branch(mod, name)
 
   puts "Creating subtree #{subtree}"
-  commit = `cd #{talk_repo} && git rev-parse origin/#{branch}`
   run "cd #{talk_repo} && git checkout #{commit}"
   run "cd #{talk_repo} && git subtree split --prefix #{mod} --branch #{subtree} -q"
 end
 
-def remove_subtree(talk_repo, mod, branch)
-  subtree = subtree_branch(mod, branch)
+def remove_subtree(talk_repo, mod, name)
+  subtree = subtree_branch(mod, name)
   puts "Removing subtree #{subtree}"
   run "cd #{talk_repo} && git branch -D #{subtree}"
 end
@@ -99,7 +107,7 @@ def create_branch(repo, branch, source)
   run "cd #{repo} && git branch #{branch} #{source}"
 end
 
-def pull_subtree(talk_repo, path, mod, branch)
+def pull_subtree_to_branch(talk_repo, path, mod, branch)
   mod_repo = module_repo(path, mod)
   if branch_exists?(mod_repo, branch)
     run "cd #{mod_repo} && git checkout #{branch}"
@@ -108,6 +116,13 @@ def pull_subtree(talk_repo, path, mod, branch)
     run "cd #{mod_repo} && git fetch #{talk_repo} #{subtree_branch(mod, branch)}"
     run "cd #{mod_repo} && git branch #{branch} FETCH_HEAD"
   end
+end
+
+def pull_subtree_to_tag(talk_repo, path, mod, tag)
+  mod_repo = module_repo(path, mod)
+  run "cd #{mod_repo} && git tag --delete #{tag}"
+  run "cd #{mod_repo} && git fetch #{talk_repo} #{subtree_branch(mod, tag)}"
+  run "cd #{mod_repo} && git tag --message=\"auto created by talk-repo-splitter\" #{tag} FETCH_HEAD"
 end
 
 def main
@@ -123,9 +138,17 @@ def main
       create_git_repo(output_path, mod[:folder])
 
       branches.each do |branch|
-        generate_subtree(talk_repo, mod[:folder], branch)
-        pull_subtree(talk_repo, output_path, mod[:folder], branch)
+        commit = commit_id(talk_repo, "origin/#{branch}")
+        generate_subtree(talk_repo, mod[:folder], branch, commit)
+        pull_subtree_to_branch(talk_repo, output_path, mod[:folder], branch)
         remove_subtree(talk_repo, mod[:folder], branch)
+      end
+
+      tags.each do |tag|
+        commit = commit_id(talk_repo, tag)
+        generate_subtree(talk_repo, mod[:folder], tag, commit)
+        pull_subtree_to_tag(talk_repo, output_path, mod[:folder], tag)
+        remove_subtree(talk_repo, mod[:folder], tag)
       end
 
       checkout(module_repo(output_path, mod[:folder]), 'master')
